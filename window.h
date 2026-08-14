@@ -18,6 +18,7 @@ public:
 
 	GLFWwindow* createWindow();
 	void changeWindowSize(GLFWwindow* window, int width, int height);
+	void initializeGlad();
 
 };
 

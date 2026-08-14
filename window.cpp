@@ -23,5 +23,13 @@ GLFWwindow* Window::createWindow() {
 	}
 
 	glfwMakeContextCurrent(window);
+
 	return window;
+}
+
+void Window::initializeGlad() {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		std::cout << "Failed to initialize GLAD" << std::endl;
+	}
+	glViewport(0, 0, width, height);
 }
