@@ -13,12 +13,14 @@ public:
 	int height;
 	int width;
 	const char* name;
+	GLFWwindow* window;
 
 	Window(const char* name, int width, int height);
 
-	GLFWwindow* createWindow();
-	void changeWindowSize(GLFWwindow* window, int width, int height);
+	void createWindow();
+	static void changeWindowSize(GLFWwindow* window, int width, int height);
 	void initializeGlad();
+	void processInput();
 
 };
 

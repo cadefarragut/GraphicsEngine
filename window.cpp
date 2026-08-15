@@ -8,14 +8,9 @@ Window::Window(const char* name, int width, int height) {
 
 }
 
-GLFWwindow* Window::createWindow() {
+void Window::createWindow() {
 
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	GLFWwindow* window = glfwCreateWindow(width, height, name, NULL, NULL);
+	this->window = glfwCreateWindow(width, height, name, NULL, NULL);
 
 	if (window == NULL) {
 		std::cout << "Failed to create window" << std::endl;
@@ -24,7 +19,10 @@ GLFWwindow* Window::createWindow() {
 
 	glfwMakeContextCurrent(window);
 
-	return window;
+}
+
+void Window::changeWindowSize(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
 }
 
 void Window::initializeGlad() {
@@ -32,4 +30,10 @@ void Window::initializeGlad() {
 		std::cout << "Failed to initialize GLAD" << std::endl;
 	}
 	glViewport(0, 0, width, height);
+}
+
+void Window::processInput() {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window, true);
+	}
 }
