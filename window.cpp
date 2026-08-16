@@ -5,6 +5,7 @@ Window::Window(const char* name, int width, int height) {
 	this->name = name;
 	this->width = width;
 	this->height = height;
+	this->window = nullptr;
 
 }
 
