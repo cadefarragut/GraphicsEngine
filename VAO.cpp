@@ -11,6 +11,10 @@ void VAO::LinkVBO(VBO VBO, GLuint layout, GLint vdata, GLint stride, GLuint offs
 	VBO.Unbind();
 }
 
+void VAO::LinkEBO(EBO EBO) {
+	EBO.Bind();
+}
+
 void VAO::Bind() {
 	glBindVertexArray(ID);
 }
