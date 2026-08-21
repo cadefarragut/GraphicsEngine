@@ -9,10 +9,10 @@
 
 float vertices[] = {
 	 // positions			// colors			 // texture coords	
-	 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	 1.0f, 1.0f,  // Top Right
-	 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 	 1.0f, 0.0f,  // Bottom Right
+	 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	 2.0f, 2.0f,  // Top Right
+	 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 	 2.0f, 0.0f,  // Bottom Right
 	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	 0.0f, 0.0f,  // Bottom Left
-	-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,    0.0f, 1.0f   // Top Left
+	-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,    0.0f, 2.0f   // Top Left
 };
 //unsigned int indices[] = {
 // Uncommented indices for EBO
@@ -24,6 +24,7 @@ unsigned int indices[] = {
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
+
 
 int main() {
 
@@ -58,16 +59,17 @@ int main() {
 	myShader.use();
 	myShader.setFloat("offset", 0.5f);
 
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	unsigned int texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
 
 	if (data) {
@@ -80,6 +82,35 @@ int main() {
 
 	stbi_image_free(data);
 
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture.\n";
+	}
+	stbi_image_free(data);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	
+	myShader.setInt("texture1", 0);
+	myShader.setInt("texture2", 1);
+	
+
 	while (!glfwWindowShouldClose(display.window)) {
 		VAO1.Bind();
 		// input
@@ -89,7 +120,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
 
 		// check and call events and swap buffers.
 		glfwSwapBuffers(display.window);
