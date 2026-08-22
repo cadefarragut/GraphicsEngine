@@ -6,12 +6,13 @@
 
 
 
+
 float vertices[] = {
 	 // positions			// colors			 // texture coords	
-	 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	 2.0f, 2.0f,  // Top Right
-	 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 	 2.0f, 0.0f,  // Bottom Right
+	 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	 1.0f, 1.0f,  // Top Right
+	 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 	 1.0f, 0.0f,  // Bottom Right
 	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	 0.0f, 0.0f,  // Bottom Left
-	-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,    0.0f, 2.0f   // Top Left
+	-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,    0.0f, 1.0f   // Top Left
 };
 //unsigned int indices[] = {
 // Uncommented indices for EBO
@@ -67,6 +68,12 @@ int main() {
 	myShader.setInt("texture1", 0);
 	myShader.setInt("texture2", 1);
 	
+	//glm::mat4 trans = glm::mat4(1.0f);
+	//trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	//trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+	
+	
+
 
 	while (!glfwWindowShouldClose(display.window)) {
 		VAO1.Bind();
@@ -75,6 +82,11 @@ int main() {
 		// rendering 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		myShader.setMatrix4("transform", trans);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
