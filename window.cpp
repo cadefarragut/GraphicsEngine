@@ -33,8 +33,3 @@ void Window::initializeGlad() {
 	glViewport(0, 0, width, height);
 }
 
-void Window::processInput() {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, true);
-	}
-}

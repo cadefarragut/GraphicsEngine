@@ -6,6 +6,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Window {
 public:
@@ -20,7 +23,6 @@ public:
 	void createWindow();
 	static void changeWindowSize(GLFWwindow* window, int width, int height);
 	void initializeGlad();
-	void processInput();
 
 };
 
