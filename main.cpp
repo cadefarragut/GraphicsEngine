@@ -8,13 +8,64 @@
 
 
 float vertices[] = {
-	 // positions			// colors			 // texture coords	
-	 0.5f,  0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	 1.0f, 1.0f,  // Top Right
-	 0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 	 1.0f, 0.0f,  // Bottom Right
-	-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	 0.0f, 0.0f,  // Bottom Left
-	-0.5f,  0.5f, 0.0f,		1.0f, 1.0f, 0.0f,    0.0f, 1.0f   // Top Left
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
-//unsigned int indices[] = {
+
+glm::vec3 cubePositions[] = {
+	glm::vec3(0.0f,  0.0f,  0.0f),
+	glm::vec3(2.0f,  5.0f, -15.0f),
+	glm::vec3(-1.5f, -2.2f, -2.5f),
+	glm::vec3(-3.8f, -2.0f, -12.3f),
+	glm::vec3(2.4f, -0.4f, -3.5f),
+	glm::vec3(-1.7f,  3.0f, -7.5f),
+	glm::vec3(1.3f, -2.0f, -2.5f),
+	glm::vec3(1.5f,  2.0f, -2.5f),
+	glm::vec3(1.5f,  0.2f, -1.5f),
+	glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+
+
 // Uncommented indices for EBO
 unsigned int indices[] = {
 	0, 1, 3, // First Triangle
@@ -22,8 +73,8 @@ unsigned int indices[] = {
 };
 
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
+#define SCREEN_WIDTH 1920.0f
+#define SCREEN_HEIGHT 1080.0f
 
 
 int main() {
@@ -44,9 +95,9 @@ int main() {
 	VAO VAO1;
 	VAO1.Bind();
 	VBO VBO1(vertices, sizeof(vertices));
-	VAO1.LinkVBO(VBO1, 0, 3, 8, 0);
-	VAO1.LinkVBO(VBO1, 1, 3, 8, 3);
-	VAO1.LinkVBO(VBO1, 2, 2, 8, 6);
+	VAO1.LinkVBO(VBO1, 0, 3, 5, 0);
+	//VAO1.LinkVBO(VBO1, 1, 3, 8, 3);
+	VAO1.LinkVBO(VBO1, 2, 2, 5, 3);
 	EBO EBO1(indices, sizeof(indices));
 	VAO1.LinkEBO(EBO1);
 
@@ -67,13 +118,18 @@ int main() {
 	
 	myShader.setInt("texture1", 0);
 	myShader.setInt("texture2", 1);
-	
-	//glm::mat4 trans = glm::mat4(1.0f);
-	//trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	//trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
-	
-	
+		
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(glm::radians(45.0f), SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+
+	
+	myShader.setMatrix4("view", view);
+	myShader.setMatrix4("projection", projection);
+
+	glEnable(GL_DEPTH_TEST);
 
 	while (!glfwWindowShouldClose(display.window)) {
 		VAO1.Bind();
@@ -81,15 +137,18 @@ int main() {
 		display.processInput();
 		// rendering 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 trans = glm::mat4(1.0f);
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		myShader.setMatrix4("transform", trans);
-
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		for (unsigned int i = 0; i < 10; i++) {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			myShader.setMatrix4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
 		// check and call events and swap buffers.
 		glfwSwapBuffers(display.window);
 		glfwPollEvents();
