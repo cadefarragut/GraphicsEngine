@@ -1,12 +1,12 @@
 #include "camera.h"
 // constructor with vectors
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+Camera::Camera(glm::vec3 position)
 {
     this->Position = position;
-    this->Front = glm::vec3(0.0f, 0.0f, -1.0f);
-    this->WorldUp = up;
-    this->Yaw = yaw;
-    this->Pitch = pitch;
+    this->Front = glm::vec3(0.0f, 0.0f, -3.0f);
+    this->WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->Yaw = YAW;
+    this->Pitch = PITCH;
     this->MovementSpeed = SPEED;
     this->MouseSensitivity = SENSITIVITY;
     this->Zoom = ZOOM;
@@ -20,15 +20,18 @@ glm::mat4 Camera::GetViewMatrix()
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
+    glm::vec3 flatFront = glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
+    glm::vec3 flatRight = glm::normalize(glm::cross(flatFront, glm::vec3(0.0f, 1.0f, 0.0f)));
+
     float velocity = MovementSpeed * deltaTime;
     if (direction == FORWARD)
-        Position += Front * velocity;
+        Position += flatFront * velocity + velocityX;
     if (direction == BACKWARD)
-        Position -= Front * velocity;
+        Position -= flatFront * velocity;
     if (direction == LEFT)
-        Position -= Right * velocity;
+        Position -= flatRight * velocity;
     if (direction == RIGHT)
-        Position += Right * velocity;
+        Position += flatRight * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
@@ -57,7 +60,7 @@ void Camera::ProcessMouseScroll(float yoffset)
     Zoom -= (float)yoffset;
     if (Zoom < 1.0f)
         Zoom = 1.0f;
-    if (Zoom > 45.0f)
+    if (Zoom > 45.0f)   
         Zoom = 45.0f;
 }
 

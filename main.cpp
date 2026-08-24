@@ -4,6 +4,7 @@
 #include "EBO.h"
 #include "Texture.h"
 #include "camera.h"
+#include "level.h"
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -26,6 +27,17 @@ bool firstMouse = true;
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xpos, double ypos);
+
+Box floorBox = {
+	.center = glm::vec3(0.0f, -1.0f, 0.0f),
+	.halfExtents = glm::vec3(40.0f, 0.0f, 40.0f)
+};
+Box wall1 = {
+	.center = glm::vec3(40.0f, -1.0f, 40.0f),
+	.halfExtents = glm::vec3(40.0f, 40.0f, 0.0f)
+};
+
+std::vector<Box> boxes = {floorBox, wall1};
 
 float vertices[] = {
 	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -71,16 +83,15 @@ float vertices[] = {
 	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
+
 glm::vec3 cubePositions[] = {
 	glm::vec3(0.0f,  0.0f,  0.0f),
 };
 
 
-
-// Uncommented indices for EBO
 unsigned int indices[] = {
-	0, 1, 3, // First Triangle
-	1, 2, 3  // Second Triangle
+	0, 1, 3, 
+	1, 2, 3  
 };
 
 
@@ -108,38 +119,32 @@ int main() {
 	VBO VBO1(vertices, sizeof(vertices));
 	VAO1.LinkVBO(VBO1, 0, 3, 5, 0);
 	VAO1.LinkVBO(VBO1, 2, 2, 5, 3);
-	EBO EBO1(indices, sizeof(indices));
-	VAO1.LinkEBO(EBO1);
-
 	VAO1.Unbind();
-
-
 
 	Shader myShader("shader.vs", "shader.fs");
 
-	myShader.use();
-
+	
 	Texture texture1("container.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGB);
 	Texture texture2("awesomeface.png", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
-
-	texture1.LinkActiveTexture(GL_TEXTURE0, GL_TEXTURE_2D);
-	texture2.LinkActiveTexture(GL_TEXTURE1, GL_TEXTURE_2D);
-	
+	myShader.use();
 	myShader.setInt("texture1", 0);
 	myShader.setInt("texture2", 1);
 		
-
-	//myShader.setMatrix4("view", view);
 	glEnable(GL_DEPTH_TEST);
 
 	while (!glfwWindowShouldClose(display.window)) {
+		myShader.use();
+
+		texture1.LinkActiveTexture(GL_TEXTURE0, GL_TEXTURE_2D);
+		texture2.LinkActiveTexture(GL_TEXTURE1, GL_TEXTURE_2D);
+
 		VAO1.Bind();
 		// input
-		//display.processInput();
 		processInput(display.window);
 		// rendering 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		float currentframe = glfwGetTime();
 		deltaTime = currentframe - lastFrame;
 		lastFrame = currentframe;
@@ -151,16 +156,31 @@ int main() {
 
 		glm::mat4 view = camera.GetViewMatrix();
 		myShader.setMatrix4("view", view);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		for (unsigned int i = 0; i < 1; i++) {
+		
+		for (int i = 0; i < boxes.size(); i++) {
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::translate(model, boxes[i].center);
+			model = glm::scale(model, boxes[i].halfExtents);
 			myShader.setMatrix4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
+		camera.velocityY -= GRAVITY * deltaTime;
+		camera.Position.y += camera.velocityY * deltaTime;
+
+
+		
+		if (camera.Position.y <= 0) {
+			camera.Position.y = 0;
+			camera.velocityY = 0;
+			camera.onGround = true;
+		}
+		else {
+			camera.onGround = false;
+		}
+
+		std::cout << camera.Position.y << std::endl;
+
 		// check and call events and swap buffers.
 		glfwSwapBuffers(display.window);
 		glfwPollEvents();
@@ -176,7 +196,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	float cameraSpeed = 2.5f * deltaTime;
+	//float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	}
@@ -188,6 +208,10 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && camera.onGround == true) {
+		camera.velocityY = 7.0f;
+		camera.onGround = false;
 	}
 }
 
