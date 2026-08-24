@@ -28,17 +28,6 @@ void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xpos, double ypos);
 
-Box floorBox = {
-	.center = glm::vec3(0.0f, -1.0f, 0.0f),
-	.halfExtents = glm::vec3(40.0f, 0.0f, 40.0f)
-};
-Box wall1 = {
-	.center = glm::vec3(40.0f, -1.0f, 40.0f),
-	.halfExtents = glm::vec3(40.0f, 40.0f, 0.0f)
-};
-
-std::vector<Box> boxes = {floorBox, wall1};
-
 float vertices[] = {
 	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -126,17 +115,18 @@ int main() {
 	
 	Texture texture1("container.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGB);
 	Texture texture2("awesomeface.png", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	std::vector<Texture> textures = { texture1, texture2 };
 	myShader.use();
 	myShader.setInt("texture1", 0);
 	myShader.setInt("texture2", 1);
 		
 	glEnable(GL_DEPTH_TEST);
 
+	Level map1;
+	map1.LoadFromFile("map.txt");
+
 	while (!glfwWindowShouldClose(display.window)) {
 		myShader.use();
-
-		texture1.LinkActiveTexture(GL_TEXTURE0, GL_TEXTURE_2D);
-		texture2.LinkActiveTexture(GL_TEXTURE1, GL_TEXTURE_2D);
 
 		VAO1.Bind();
 		// input
@@ -157,10 +147,13 @@ int main() {
 		glm::mat4 view = camera.GetViewMatrix();
 		myShader.setMatrix4("view", view);
 		
-		for (int i = 0; i < boxes.size(); i++) {
+		//std::cout << camera.Position.x << " " << camera.Position.z << std::endl;
+
+		for (int i = 0; i < map1.boxes.size(); i++) {
+			glBindTexture(GL_TEXTURE_2D, textures[0].ID);
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, boxes[i].center);
-			model = glm::scale(model, boxes[i].halfExtents);
+			model = glm::translate(model, map1.boxes[i].center);
+			model = glm::scale(model, map1.boxes[i].halfExtents);
 			myShader.setMatrix4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
@@ -179,8 +172,6 @@ int main() {
 			camera.onGround = false;
 		}
 
-		std::cout << camera.Position.y << std::endl;
-
 		// check and call events and swap buffers.
 		glfwSwapBuffers(display.window);
 		glfwPollEvents();
@@ -196,7 +187,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	//float cameraSpeed = 2.5f * deltaTime;
+	
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	}
