@@ -18,6 +18,10 @@ glm::mat4 Camera::GetViewMatrix()
     return glm::lookAt(Position, Position + Front, Up);
 }
 
+glm::mat4 Camera::GetProjectionMatrix() {
+    return glm::perspective(glm::radians(ZOOM), SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+}
+
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
     glm::vec3 flatFront = glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
@@ -75,3 +79,4 @@ void Camera::updateCameraVectors()
     Right = glm::normalize(glm::cross(Front, WorldUp));
     Up = glm::normalize(glm::cross(Right, Front));
 }
+
