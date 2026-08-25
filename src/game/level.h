@@ -21,6 +21,6 @@ struct Level {
 	bool LoadFromFile(const std::string& path);
 };
 
-bool LoadFromFile(const std::string& path);
+//bool LoadFromFile(const std::string& path);
 #endif 
 

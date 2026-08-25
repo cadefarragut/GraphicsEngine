@@ -82,8 +82,8 @@ void Render::BeginWorld(const glm::mat4& viewm, const glm::mat4& proj) {
 	projection = proj;
 	shader.setMatrix4("projection", projection);
 
-
-	glm::mat4 view = viewm;
+	glm::mat4 view = glm::mat4(1.0f);
+	view = viewm;
 	shader.setMatrix4("view", view);
 }
 

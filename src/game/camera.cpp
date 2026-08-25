@@ -1,5 +1,5 @@
 #include "camera.h"
-#include "Config.h"
+#include "../Config.h"
 
 Camera::Camera(glm::vec3 position, float yaw, float pitch, float speed, float sensitivity, float zoom)
 {
