@@ -49,10 +49,10 @@ unsigned int indices[] = {
 	1, 2, 3
 };
 
-Render::Render() : shader("shader.vs", "shader.fs") {}
+Render::Render() : shader("src/assets/shader.vs", "src/assets/shader.fs") {}
 
 void Render::Init() {
-	//vao = VAO();
+	
 	vbo = VBO(vertices, sizeof(vertices));
 	vao.Bind();
 	vao.LinkVBO(vbo, 0, 3, 5, 0);
@@ -60,11 +60,9 @@ void Render::Init() {
 	vao.Unbind();
 
 
-	shader = Shader("shader.vs", "shader.fs");
-
-	Texture texture1("container.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGB);
-	Texture texture2("awesomeface.png", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
-	// store textures in the member vector so Draw can access them later
+	Texture texture1("src/assets/container.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGB);
+	Texture texture2("src/assets/awesomeface.png", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	
 	textures = { texture1, texture2 };
 
 	shader.use();

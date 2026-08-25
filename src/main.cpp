@@ -1,12 +1,12 @@
-#include "window.h"
+#include "core/window.h"
 #include "Config.h"
-#include "shader.h"
-#include "VAO.h"
-#include "EBO.h"
-#include "Texture.h"
-#include "camera.h"
-#include "level.h"
-#include "render.h"
+#include "assets/render/shader.h"
+#include "assets/render/VAO.h"
+#include "assets/render/EBO.h"
+#include "assets/render/Texture.h"
+#include "game/camera.h"
+#include "game/level.h"
+#include "assets/render/render.h"
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
