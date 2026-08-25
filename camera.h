@@ -15,15 +15,14 @@ enum Camera_Movement {
     SPACE
 };
 
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 2.5f;
-const float SENSITIVITY = 0.1f;
-const float ZOOM = 45.0f;
-const float GRAVITY = 20.0f;
+namespace CameraDefaults {
+    constexpr float Yaw = -90.0f;
+    constexpr float Pitch = 0.0f;
+    constexpr float Speed = 2.5f;
+    constexpr float Sensitivity = 0.1f;
+    constexpr float Zoom = 45.0f;
+}
 
-#define SCREEN_WIDTH 1920.0f
-#define SCREEN_HEIGHT 1080.0f
 
 class Camera
 {
@@ -35,18 +34,23 @@ public:
     glm::vec3 WorldUp;
     glm::vec3 flatFront;
     glm::vec3 flatRight;
-    float Yaw;
-    float Pitch;
-    float MovementSpeed;
-    float MouseSensitivity;
-    float Zoom;
+    float Yaw = CameraDefaults::Yaw;
+    float Pitch = CameraDefaults::Pitch;
+    float MovementSpeed = CameraDefaults::Speed;
+    float MouseSensitivity = CameraDefaults::Sensitivity;
+    float Zoom = CameraDefaults::Zoom;
 
     float velocityY = 0.0f;
     float velocityX = 0.0f;
     bool onGround = false;
     bool isSprinting = false;
 
-    Camera(glm::vec3 position);
+    Camera(glm::vec3 position,
+           float yaw = CameraDefaults::Yaw,
+           float pitch = CameraDefaults::Pitch,
+           float speed = CameraDefaults::Speed,
+           float sensitivity = CameraDefaults::Sensitivity,
+           float zoom = CameraDefaults::Zoom);
 
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();

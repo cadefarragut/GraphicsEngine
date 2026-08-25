@@ -1,4 +1,5 @@
 #include "window.h"
+#include "Config.h"
 #include "shader.h"
 #include "VAO.h"
 #include "EBO.h"
@@ -7,20 +8,12 @@
 #include "level.h"
 #include "render.h"
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-#define SCREEN_WIDTH 1920.0f
-#define SCREEN_HEIGHT 1080.0f
-
-
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCREEN_WIDTH / 2.0f;
-float lastY = SCREEN_HEIGHT / 2.0f;
+float lastX = static_cast<float>(SCREEN_WIDTH) / 2.0f;
+float lastY = static_cast<float>(SCREEN_HEIGHT) / 2.0f;
 bool firstMouse = true;
 
 void render();

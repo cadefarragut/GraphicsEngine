@@ -1,15 +1,16 @@
 #include "camera.h"
-// constructor with vectors
-Camera::Camera(glm::vec3 position)
+#include "Config.h"
+
+Camera::Camera(glm::vec3 position, float yaw, float pitch, float speed, float sensitivity, float zoom)
 {
     this->Position = position;
     this->Front = glm::vec3(0.0f, 0.0f, -3.0f);
     this->WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->Yaw = YAW;
-    this->Pitch = PITCH;
-    this->MovementSpeed = SPEED;
-    this->MouseSensitivity = SENSITIVITY;
-    this->Zoom = ZOOM;
+    this->Yaw = yaw;
+    this->Pitch = pitch;
+    this->MovementSpeed = speed;
+    this->MouseSensitivity = sensitivity;
+    this->Zoom = zoom;
     updateCameraVectors();
 }
 
@@ -19,7 +20,8 @@ glm::mat4 Camera::GetViewMatrix()
 }
 
 glm::mat4 Camera::GetProjectionMatrix() {
-    return glm::perspective(glm::radians(ZOOM), SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+    float aspect = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
+    return glm::perspective(glm::radians(Zoom), aspect, 0.1f, 100.0f);
 }
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
