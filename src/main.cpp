@@ -7,6 +7,7 @@
 #include "game/camera.h"
 #include "game/level.h"
 #include "render/render.h"
+#include "game/player.h"
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -47,16 +48,21 @@ int main() {
 	Level map1;
 	map1.LoadFromFile("map.txt");
 
+
+
+	//Player player;
+
 	while (!glfwWindowShouldClose(display.window)) {
+		// time
+		float currentTime = glfwGetTime();
+		deltaTime = currentTime - lastFrame;
+		lastFrame = currentTime;
 
 		// input
 		processInput(display.window);
+
 		// rendering 
 		render.BeginWorld(camera.GetViewMatrix(), camera.GetProjectionMatrix());
-
-		float currentframe = glfwGetTime();
-		deltaTime = currentframe - lastFrame;
-		lastFrame = currentframe;
 		
 		for (const Box& x : map1.boxes) {
 			render.Draw(x);

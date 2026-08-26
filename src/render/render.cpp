@@ -60,10 +60,12 @@ void Render::Init() {
 	vao.Unbind();
 
 
-	Texture texture1("src/assets/container.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGB);
-	Texture texture2("src/assets/awesomeface.png", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	Texture texture1("src/assets/sand.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	Texture texture2("src/assets/travertine.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	Texture texture3("src/assets/concrete.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
+	Texture texture4("src/assets/bricks.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
 	
-	textures = { texture1, texture2 };
+	textures = { texture1, texture2, texture3, texture4 };
 
 	shader.use();
 
@@ -89,7 +91,7 @@ void Render::BeginWorld(const glm::mat4& viewm, const glm::mat4& proj) {
 
 void Render::Draw(const Box& boxes) {
 		if (textures.empty()) return; // nothing to draw if textures not initialized
-		// choose texture based on box.textureId (default 0)
+		shader.setVec2("uvscale", glm::vec2(boxes.halfExtents.x, boxes.halfExtents.z) * 0.5f);
 		int tid = boxes.textureId;
 		if (tid < 0 || tid >= static_cast<int>(textures.size())) tid = 0;
 		glBindTexture(GL_TEXTURE_2D, textures[tid].ID);

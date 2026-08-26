@@ -13,7 +13,7 @@ Texture::Texture(const char* texture, GLenum texture_type, GLenum outside_coord_
 	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, near_or_lin);
 
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load(texture, &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load(texture, &width, &height, &nrChannels, 4);
 
 	if (data) {
 		glTexImage2D(texture_type, 0, RGB, width, height, 0, RGB, GL_UNSIGNED_BYTE, data);
