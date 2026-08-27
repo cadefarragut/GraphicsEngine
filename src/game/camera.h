@@ -12,7 +12,8 @@ enum Camera_Movement {
     BACKWARD,
     LEFT,
     RIGHT,
-    SPACE
+    UP,
+    DOWN
 };
 
 namespace CameraDefaults {

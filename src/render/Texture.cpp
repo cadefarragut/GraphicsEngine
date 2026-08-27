@@ -9,9 +9,10 @@ Texture::Texture(const char* texture, GLenum texture_type, GLenum outside_coord_
 
 	glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, outside_coord_act);
 	glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, outside_coord_act);
-	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, near_or_lin);
+	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, near_or_lin);
 
+	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(texture, &width, &height, &nrChannels, 4);
 

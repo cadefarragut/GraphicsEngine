@@ -26,18 +26,20 @@ glm::mat4 Camera::GetProjectionMatrix() {
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
-    glm::vec3 flatFront = glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
-    glm::vec3 flatRight = glm::normalize(glm::cross(flatFront, glm::vec3(0.0f, 1.0f, 0.0f)));
 
     float velocity = MovementSpeed * deltaTime;
     if (direction == FORWARD)
-        Position += Front.x * velocity;
+        Position += Front * velocity;
     if (direction == BACKWARD)
-        Position -= Front.x * velocity;
+        Position -= Front * velocity;
     if (direction == LEFT)
-        Position -= Front.y * velocity;
+        Position -= Front * velocity;
     if (direction == RIGHT)
-        Position += Front.y * velocity;
+        Position += Front * velocity;
+    if (direction == UP)
+        Position += WorldUp * velocity;
+    if (direction == DOWN)
+        Position -= WorldUp * velocity;
 }
 
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
