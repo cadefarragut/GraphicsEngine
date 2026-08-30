@@ -364,3 +364,6 @@ MigrationBackup/
 #misc
 
 FodyWeavers.xsd
+
+# personal notes, not part of the project
+notes/
