@@ -25,15 +25,4 @@ Texture::Texture(const char* texture, GLenum texture_type, GLenum outside_coord_
 	}
 
 	stbi_image_free(data);
-
-}
-
-
-void Texture::LinkActiveTexture(GLenum texture_layer, GLenum texture_type) {
-	glActiveTexture(texture_layer);
-	glBindTexture(texture_type, ID);
-}
-
-void Texture::Bind() {
-	glBindTexture(GL_TEXTURE_2D, ID);
 }

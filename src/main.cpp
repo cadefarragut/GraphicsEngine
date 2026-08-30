@@ -1,9 +1,5 @@
 #include "core/window.h"
 #include "Config.h"
-#include "render/shader.h"
-#include "render/VAO.h"
-#include "render/EBO.h"
-#include "render/Texture.h"
 #include "game/camera.h"
 #include "render/render.h"
 
@@ -14,7 +10,6 @@ float lastX = static_cast<float>(SCREEN_WIDTH) / 2.0f;
 float lastY = static_cast<float>(SCREEN_HEIGHT) / 2.0f;
 bool firstMouse = true;
 
-void render();
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xpos, double ypos);
@@ -28,7 +23,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	Window display("window", SCREEN_WIDTH, SCREEN_HEIGHT);
-	Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	Camera camera(glm::vec3(0.0f, 2.0f, 3.0f));
 
 	display.createWindow();
 	glfwSetWindowUserPointer(display.window, &camera);
@@ -42,29 +37,26 @@ int main() {
 	Render render;
 	render.Init();
 
-	// load boxes for the scene (map.txt)
+	// load the scene (list of textured boxes)
 	render.LoadBoxesFromFile("map.txt");
-
-
-	//Player player;
 
 	while (!glfwWindowShouldClose(display.window)) {
 		// time
-		float currentTime = glfwGetTime();
+		float currentTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentTime - lastFrame;
 		lastFrame = currentTime;
 
 		// input
 		processInput(display.window);
 		
-		// rendering 
+		// rendering
 		render.BeginWorld(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.Position);
-		
-		// draw sun in the sky (positioned above and behind the scene)
-		//render.DrawSun(glm::vec3(0.0f, 10.0f, -20.0f), glm::vec3(4.0f, 4.0f, 4.0f), 0);
 
+		render.DrawSky();
 		render.DrawScene();
-		
+		render.DrawSun();
+		render.DrawLights();
+
 		glfwSwapBuffers(display.window);
 		glfwPollEvents();
 	}
@@ -103,9 +95,13 @@ void processInput(GLFWwindow* window) {
 	}
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 	Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 	if (!cam) return;
+
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
 	if (firstMouse) {
 		lastX = xpos;
 		lastY = ypos;

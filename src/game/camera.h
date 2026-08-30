@@ -19,7 +19,7 @@ enum Camera_Movement {
 namespace CameraDefaults {
     constexpr float Yaw = -90.0f;
     constexpr float Pitch = 0.0f;
-    constexpr float Speed = 2.5f;
+    constexpr float Speed = 9.0f;
     constexpr float Sensitivity = 0.1f;
     constexpr float Zoom = 45.0f;
 }
@@ -33,18 +33,11 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
-    glm::vec3 flatFront;
-    glm::vec3 flatRight;
     float Yaw = CameraDefaults::Yaw;
     float Pitch = CameraDefaults::Pitch;
     float MovementSpeed = CameraDefaults::Speed;
     float MouseSensitivity = CameraDefaults::Sensitivity;
     float Zoom = CameraDefaults::Zoom;
-
-    float velocityY = 0.0f;
-    float velocityX = 0.0f;
-    bool onGround = false;
-    bool isSprinting = false;
 
     Camera(glm::vec3 position,
            float yaw = CameraDefaults::Yaw,

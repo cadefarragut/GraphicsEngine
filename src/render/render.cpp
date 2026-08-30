@@ -2,6 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
+#include <cmath>
+#include <GLFW/glfw3.h>
 
 float vertices[] = {
 	// position            uv       normal
@@ -42,50 +45,6 @@ float vertices[] = {
 	  -0.5f,-0.5f, 0.5f,   0.0f,1.0f,   0.0f,-1.0f, 0.0f,
 };
 
-float sunVertices[] = {
-	-0.5f, -0.5f, -0.5f, 
-	 0.5f, -0.5f, -0.5f, 
-	 0.5f,  0.5f, -0.5f,  
-	 0.5f,  0.5f, -0.5f, 
-	-0.5f,  0.5f, -0.5f, 
-	-0.5f, -0.5f, -0.5f,  
-
-	-0.5f, -0.5f,  0.5f,  
-	 0.5f, -0.5f,  0.5f, 
-	 0.5f,  0.5f,  0.5f,  
-	 0.5f,  0.5f,  0.5f, 
-	-0.5f,  0.5f,  0.5f, 
-	-0.5f, -0.5f,  0.5f,
-
-	-0.5f,  0.5f,  0.5f,  
-	-0.5f,  0.5f, -0.5f,  
-	-0.5f, -0.5f, -0.5f, 
-	-0.5f, -0.5f, -0.5f, 
-	-0.5f, -0.5f,  0.5f,  
-	-0.5f,  0.5f,  0.5f, 
-
-	 0.5f,  0.5f,  0.5f,  
-	 0.5f,  0.5f, -0.5f,  
-	 0.5f, -0.5f, -0.5f, 
-	 0.5f, -0.5f, -0.5f, 
-	 0.5f, -0.5f,  0.5f,  
-	 0.5f,  0.5f,  0.5f,  
-
-	-0.5f, -0.5f, -0.5f, 
-	 0.5f, -0.5f, -0.5f,  
-	 0.5f, -0.5f,  0.5f, 
-	 0.5f, -0.5f,  0.5f,
-	-0.5f, -0.5f,  0.5f,
-	-0.5f, -0.5f, -0.5f,
-
-	-0.5f,  0.5f, -0.5f,
-	 0.5f,  0.5f, -0.5f,
-	 0.5f,  0.5f,  0.5f,
-	 0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f,  0.5f,
-	-0.5f,  0.5f, -0.5f,
-};
-
 unsigned int indices[] = {
 	 0,  1,  2,   2,  3,  0,     // front
 	 4,  5,  6,   6,  7,  4,     // back
@@ -94,10 +53,67 @@ unsigned int indices[] = {
 	16, 17, 18,  18, 19, 16,     // top
 	20, 21, 22,  22, 23, 20,     // bottom
 };
-Render::Render() : shader("src/assets/shader.vs", "src/assets/shader.fs") {}
+
+// seconds for a full dawn -> dusk -> dawn sweep
+static const float kDayLength = 90.0f;
+
+// sky gradient endpoints, mixed by the sun's height
+static const glm::vec3 kDayTop  = glm::vec3(0.20f, 0.44f, 0.78f);
+static const glm::vec3 kDayBot  = glm::vec3(0.80f, 0.87f, 0.95f);
+static const glm::vec3 kDuskTop = glm::vec3(0.05f, 0.08f, 0.18f);
+static const glm::vec3 kDuskBot = glm::vec3(0.85f, 0.40f, 0.22f);
+
+struct Material { glm::vec3 tint; float shininess; float specStrength; };
+
+static Material materialFor(int texId) {
+	switch (texId) {
+	case 0: return { glm::vec3(0.70f, 0.64f, 0.48f),  4.0f, 0.04f }; // sand
+	case 1: return { glm::vec3(1.00f, 0.96f, 0.90f), 64.0f, 0.55f }; // travertine
+	case 2: return { glm::vec3(0.95f, 0.95f, 0.97f),  8.0f, 0.12f }; // concrete
+	case 3: return { glm::vec3(0.92f, 0.86f, 0.82f), 16.0f, 0.22f }; // bricks
+	default: return { glm::vec3(1.0f),               16.0f, 0.15f };
+	}
+}
+
+static const int       kNumPointLights = 4;
+static const glm::vec3 kPointLightPos[kNumPointLights] = {
+	{ 46.0f, 3.0f,   0.0f },
+	{-46.0f, 3.0f,   0.0f },
+	{  0.0f, 3.0f,  30.0f },
+	{  0.0f, 3.0f, -30.0f },
+};
+static const glm::vec3 kPointLightColor = glm::vec3(1.8f, 0.95f, 0.42f);
+
+// A tiny, fixed height offset per box so no two faces are ever exactly
+// coplanar - otherwise the stacked seating blocks z-fight. Big flat boxes
+// (the arena floor) get a much smaller offset so it stays flush.
+static float depthNudge(const glm::vec3& center, const glm::vec3& halfExtents) {
+	float h = std::sin(center.x * 127.1f + center.y * 311.7f + center.z * 74.7f) * 43758.5453f;
+	float unit = ((h - std::floor(h)) * 2.0f - 1.0f);
+	float amount = (halfExtents.x > 8.0f || halfExtents.z > 8.0f) ? 0.0025f : 0.015f;
+	return unit * amount;
+}
+
+// A cube with position + colour, using the shared index buffer. Top verts get
+// topColor, bottom verts get bottomColor.
+static std::vector<float> makeColorCube(const glm::vec3& topColor, const glm::vec3& bottomColor) {
+	std::vector<float> out;
+	for (int i = 0; i < 24; ++i) {
+		float x = vertices[i * 8 + 0];
+		float y = vertices[i * 8 + 1];
+		float z = vertices[i * 8 + 2];
+		const glm::vec3& c = (y > 0.0f) ? topColor : bottomColor;
+		out.insert(out.end(), { x, y, z, c.r, c.g, c.b });
+	}
+	return out;
+}
+
+Render::Render()
+	: shader("src/assets/shader.vs", "src/assets/shader.fs"),
+	  flatShader("src/assets/flat.vs", "src/assets/flat.fs") {}
 
 void Render::Init() {
-	
+
 	vbo = VBO(vertices, sizeof(vertices));
 	vao.Bind();
 	ebo = EBO(indices, sizeof(indices));
@@ -106,20 +122,34 @@ void Render::Init() {
 	vao.LinkVBO(vbo, 2, 3, 8, 5);
 	vao.Unbind();
 
+	std::vector<float> skyData = makeColorCube(kDayTop, kDayBot);
+	skyVbo = VBO(skyData.data(), skyData.size() * sizeof(float));
+	skyVao.Bind();
+	ebo.Bind();
+	skyVao.LinkVBO(skyVbo, 0, 3, 6, 0);
+	skyVao.LinkVBO(skyVbo, 1, 3, 6, 3);
+	skyVao.Unbind();
+
+	std::vector<float> sunData = makeColorCube(glm::vec3(1.0f, 0.93f, 0.75f), glm::vec3(1.0f, 0.93f, 0.75f));
+	sunVbo = VBO(sunData.data(), sunData.size() * sizeof(float));
+	sunVao.Bind();
+	ebo.Bind();
+	sunVao.LinkVBO(sunVbo, 0, 3, 6, 0);
+	sunVao.LinkVBO(sunVbo, 1, 3, 6, 3);
+	sunVao.Unbind();
+
 	Texture texture1("src/assets/sand.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
 	Texture texture2("src/assets/travertine.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
 	Texture texture3("src/assets/concrete.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
 	Texture texture4("src/assets/bricks.jpg", GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR, GL_RGBA);
-	
 	textures = { texture1, texture2, texture3, texture4 };
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
+	glEnable(GL_DEPTH_TEST);
 
 	shader.use();
 	shader.setInt("texture1", 0);
-	glEnable(GL_DEPTH_TEST);
 }
 
 bool Render::LoadBoxesFromFile(const std::string& path) {
@@ -144,71 +174,142 @@ bool Render::LoadBoxesFromFile(const std::string& path) {
 }
 
 void Render::DrawScene() {
+	shader.use();
 	for (const Box& b : sceneBoxes) {
 		Draw(b);
 	}
 }
 
 void Render::BeginWorld(const glm::mat4& viewm, const glm::mat4& proj, const glm::vec3& camPos) {
+	mView = viewm;
+	mProj = proj;
+
 	shader.use();
 
-	glm::vec3 skyColor = glm::vec3(0.45f, 0.58f, 0.75f);
+	float t = static_cast<float>(glfwGetTime());
 
-	glm::vec3 sunDir = glm::normalize(glm::vec3(-0.55f, -0.42f, -0.25f));
-	shader.setVec3("sunDir", sunDir);
-	shader.setVec3("sunColor", glm::vec3(1.15f, 1.02f, 0.82f));
-	shader.setVec3("skyColor", glm::vec3(0.45f, 0.58f, 0.75f));
+	// move the sun along an arc, dawn -> noon -> dusk and back
+	float dayT = std::fmod(t / kDayLength, 1.0f);
+	float tri  = 1.0f - std::fabs(2.0f * dayT - 1.0f);
+	float ang  = glm::radians(12.0f + tri * 156.0f);
+	mSunPos = glm::normalize(glm::vec3(std::cos(ang), std::sin(ang), 0.32f)) * 160.0f;
+	float elev = glm::clamp(std::sin(ang), 0.0f, 1.0f);   // 0 at the horizon, 1 overhead
+
+	glm::vec3 sunColor = glm::mix(glm::vec3(1.15f, 0.42f, 0.16f),
+	                              glm::vec3(1.00f, 0.95f, 0.85f), elev);
+
+	shader.setVec3("sun.direction", glm::normalize(-mSunPos));
+	shader.setVec3("sun.ambient", glm::vec3(0.05f) + glm::vec3(0.12f) * elev);
+	shader.setVec3("sun.diffuse", sunColor * (0.16f + 0.66f * elev));
+	shader.setVec3("sun.specular", glm::vec3(0.10f + 0.30f * elev));
+
+	// cool fill light from above so shadowed faces don't go black
+	float fill = 0.25f + 0.55f * elev;
+	shader.setVec3("skyFill.direction", glm::vec3(0.30f, -0.90f, 0.20f));
+	shader.setVec3("skyFill.ambient", glm::vec3(0.14f, 0.16f, 0.21f) * fill);
+	shader.setVec3("skyFill.diffuse", glm::vec3(0.22f, 0.27f, 0.38f) * fill);
+	shader.setVec3("skyFill.specular", glm::vec3(0.0f));
+
+	mSkyTop    = glm::mix(kDuskTop, kDayTop, elev);
+	mSkyBottom = glm::mix(kDuskBot, kDayBot, elev);
+
+	// braziers flicker, and get brighter as the sun goes down
+	float brazierBoost = 1.0f + (1.0f - elev) * 1.6f;
+	for (int i = 0; i < kNumPointLights; ++i) {
+		float flicker = 0.82f + 0.18f * std::sin(t * 7.3f + i * 2.1f);
+		std::string p = "pointLights[" + std::to_string(i) + "].";
+		shader.setVec3(p + "position", kPointLightPos[i]);
+		shader.setVec3(p + "color", kPointLightColor * flicker * brazierBoost);
+		shader.setFloat(p + "constant", 1.0f);
+		shader.setFloat(p + "linear", 0.045f);
+		shader.setFloat(p + "quadratic", 0.0075f);
+	}
+
+	shader.setVec3("viewPos", camPos);
 
 	vao.Bind();
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClearColor(mSkyBottom.r, mSkyBottom.g, mSkyBottom.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-	glm::mat4 projection = glm::mat4(1.0f);
-	projection = proj;
-	shader.setMatrix4("projection", projection);
-
-	glm::mat4 view = glm::mat4(1.0f);
-	view = viewm;
-	shader.setMatrix4("view", view);
+	shader.setMatrix4("projection", proj);
+	shader.setMatrix4("view", viewm);
 }
 
-void Render::Draw(const Box& boxes) {
-		if (textures.empty()) return; // nothing to draw if textures not initialized
-		shader.setVec2("uvscale", glm::vec2(boxes.halfExtents.x, boxes.halfExtents.z) * 0.5f);
-		int tid = boxes.textureId;
-		if (tid < 0 || tid >= static_cast<int>(textures.size())) tid = 0;
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textures[tid].ID);
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, boxes.center);
-		model = glm::scale(model, boxes.halfExtents);
-		shader.setMatrix4("model", model);
-		glm::mat3 nrm = glm::mat3(glm::transpose(glm::inverse(model)));
-		shader.setMatrix3("normalMatrix", nrm);
-		// draw using the main cube VAO
-		vao.Bind();
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		vao.Unbind();
+void Render::DrawSky() {
+	// update the gradient for the current time of day
+	std::vector<float> skyData = makeColorCube(mSkyTop, mSkyBottom);
+	glBindBuffer(GL_ARRAY_BUFFER, skyVbo.ID);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, skyData.size() * sizeof(float), skyData.data());
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	// cube centred on the camera so you can never reach its edge
+	glm::vec3 camPos = glm::vec3(glm::inverse(mView)[3]);
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), camPos);
+	model = glm::scale(model, glm::vec3(10.0f));
+
+	flatShader.use();
+	flatShader.setMatrix4("projection", mProj);
+	flatShader.setMatrix4("view", mView);
+	flatShader.setMatrix4("model", model);
+
+	glDisable(GL_CULL_FACE);
+	glDepthMask(GL_FALSE);
+	skyVao.Bind();
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	skyVao.Unbind();
+	glDepthMask(GL_TRUE);
+	glEnable(GL_CULL_FACE);
 }
 
+void Render::Draw(const Box& box) {
+	if (textures.empty()) return;
 
+	int tid = box.textureId;
+	if (tid < 0 || tid >= static_cast<int>(textures.size())) tid = 0;
 
-void Render::DrawSun(const glm::vec3& position, const glm::vec3& scale, int textureId) {
-    if (textures.empty()) return;
-    shader.setVec2("uvscale", glm::vec2(1.0f, 1.0f));
-    int tid = textureId;
-    if (tid < 0 || tid >= static_cast<int>(textures.size())) tid = 0;
-    glBindTexture(GL_TEXTURE_2D, textures[tid].ID);
+	glBindTexture(GL_TEXTURE_2D, textures[tid].ID);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, position);
-    model = glm::scale(model, scale);
-    shader.setMatrix4("model", model);
-	
-	// draw sun using the same cube VAO (same vertex format)
+	Material mat = materialFor(tid);
+	shader.setVec3("material.tint", mat.tint);
+	shader.setFloat("material.shininess", mat.shininess);
+	shader.setFloat("material.specStrength", mat.specStrength);
+	shader.setVec2("uvscale", glm::vec2(box.halfExtents.x, box.halfExtents.z) * 0.28f);
+
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), box.center + glm::vec3(0.0f, depthNudge(box.center, box.halfExtents), 0.0f));
+	model = glm::scale(model, box.halfExtents);
+	shader.setMatrix4("model", model);
+	shader.setMatrix3("normalMatrix", glm::mat3(glm::transpose(glm::inverse(model))));
+
 	vao.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	vao.Unbind();
+}
+
+void Render::DrawSun() {
+	flatShader.use();
+	flatShader.setMatrix4("projection", mProj);
+	flatShader.setMatrix4("view", mView);
+
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), mSunPos);
+	model = glm::scale(model, glm::vec3(12.0f));
+	flatShader.setMatrix4("model", model);
+
+	sunVao.Bind();
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	sunVao.Unbind();
+}
+
+void Render::DrawLights() {
+	flatShader.use();
+	flatShader.setMatrix4("projection", mProj);
+	flatShader.setMatrix4("view", mView);
+
+	sunVao.Bind();
+	for (int i = 0; i < kNumPointLights; ++i) {
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), kPointLightPos[i]);
+		model = glm::scale(model, glm::vec3(1.2f));
+		flatShader.setMatrix4("model", model);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	}
+	sunVao.Unbind();
 }

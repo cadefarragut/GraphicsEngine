@@ -21,7 +21,8 @@ glm::mat4 Camera::GetViewMatrix()
 
 glm::mat4 Camera::GetProjectionMatrix() {
     float aspect = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
-    return glm::perspective(glm::radians(Zoom), aspect, 0.1f, 100.0f);
+    // near plane kept off 0 so the depth buffer has enough precision for the stacked blocks
+    return glm::perspective(glm::radians(Zoom), aspect, 0.5f, 220.0f);
 }
 
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
