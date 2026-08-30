@@ -4,7 +4,10 @@ A small real-time 3D renderer written from scratch in **C++ and OpenGL 3.3**, wi
 game engine. It renders a ~1,500-block model of the Roman Colosseum under a Phong
 lighting pipeline with an animated day/night cycle.
 
-![screenshot](screenshots/colosseum.png)
+
+<img width="480" height="270" alt="gif" src="https://github.com/user-attachments/assets/babd1afd-d203-402e-a954-1dd19416d71c" />
+
+
 
 ## Features
 
