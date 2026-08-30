@@ -7,13 +7,6 @@ lighting pipeline with an animated day/night cycle.
 
 <img width="480" height="270" alt="gif" src="https://github.com/user-attachments/assets/9ff5d5dc-3e91-4252-a51e-517ae91961dd" />
 
-
-<img width="1916" height="1076" alt="image" src="https://github.com/user-attachments/assets/2effdbe1-b115-48d1-8d2c-4fcc16991b9b" />
-
-
-<img width="1921" height="1081" alt="image" src="https://github.com/user-attachments/assets/0b7a8061-3e3c-41e5-9eef-a519caef72e2" />
-
-
 ## Features
 
 - **Lighting** — Phong (ambient / diffuse / specular) with two directional lights,
@@ -89,3 +82,11 @@ This started as a walk-through of the [LearnOpenGL](https://learnopengl.com/)
 stays within those techniques, so there is no shadow mapping, HDR/tone mapping or
 MSAA, and the geometry is axis-aligned boxes rather than curved surfaces — those
 would be the natural next steps.
+
+
+
+<img width="1916" height="1076" alt="image" src="https://github.com/user-attachments/assets/2effdbe1-b115-48d1-8d2c-4fcc16991b9b" />
+
+
+<img width="1921" height="1081" alt="image" src="https://github.com/user-attachments/assets/0b7a8061-3e3c-41e5-9eef-a519caef72e2" />
+
