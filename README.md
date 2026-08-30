@@ -7,7 +7,8 @@ lighting pipeline with an animated day/night cycle.
 
 
 <img width="480" height="270" alt="gif" src="https://github.com/user-attachments/assets/babd1afd-d203-402e-a954-1dd19416d71c" />
-https://canva.link/sr6d5pttz31j4z2
+<img width="360" height="202" alt="b00cuw" src="https://github.com/user-attachments/assets/037a9d68-8b69-4c70-a93c-191d4edbb769" />
+
 
 
 
