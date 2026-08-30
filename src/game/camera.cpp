@@ -34,9 +34,9 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
     if (direction == BACKWARD)
         Position -= Front * velocity;
     if (direction == LEFT)
-        Position -= Front * velocity;
+        Position -= Right * velocity;
     if (direction == RIGHT)
-        Position += Front * velocity;
+        Position += Right * velocity;
     if (direction == UP)
         Position += WorldUp * velocity;
     if (direction == DOWN)
