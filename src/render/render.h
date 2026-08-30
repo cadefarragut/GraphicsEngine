@@ -26,7 +26,6 @@ public:
 	void DrawScene();
 	void DrawSky();
 	void DrawSun();
-	void DrawLights();
 	void Draw(const Box& box);
 
 private:

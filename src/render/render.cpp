@@ -75,15 +75,6 @@ static Material materialFor(int texId) {
 	}
 }
 
-static const int       kNumPointLights = 4;
-static const glm::vec3 kPointLightPos[kNumPointLights] = {
-	{ 46.0f, 3.0f,   0.0f },
-	{-46.0f, 3.0f,   0.0f },
-	{  0.0f, 3.0f,  30.0f },
-	{  0.0f, 3.0f, -30.0f },
-};
-static const glm::vec3 kPointLightColor = glm::vec3(1.8f, 0.95f, 0.42f);
-
 // A tiny, fixed height offset per box so no two faces are ever exactly
 // coplanar - otherwise the stacked seating blocks z-fight. Big flat boxes
 // (the arena floor) get a much smaller offset so it stays flush.
@@ -213,18 +204,6 @@ void Render::BeginWorld(const glm::mat4& viewm, const glm::mat4& proj, const glm
 	mSkyTop    = glm::mix(kDuskTop, kDayTop, elev);
 	mSkyBottom = glm::mix(kDuskBot, kDayBot, elev);
 
-	// braziers flicker, and get brighter as the sun goes down
-	float brazierBoost = 1.0f + (1.0f - elev) * 1.6f;
-	for (int i = 0; i < kNumPointLights; ++i) {
-		float flicker = 0.82f + 0.18f * std::sin(t * 7.3f + i * 2.1f);
-		std::string p = "pointLights[" + std::to_string(i) + "].";
-		shader.setVec3(p + "position", kPointLightPos[i]);
-		shader.setVec3(p + "color", kPointLightColor * flicker * brazierBoost);
-		shader.setFloat(p + "constant", 1.0f);
-		shader.setFloat(p + "linear", 0.045f);
-		shader.setFloat(p + "quadratic", 0.0075f);
-	}
-
 	shader.setVec3("viewPos", camPos);
 
 	vao.Bind();
@@ -296,20 +275,5 @@ void Render::DrawSun() {
 
 	sunVao.Bind();
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	sunVao.Unbind();
-}
-
-void Render::DrawLights() {
-	flatShader.use();
-	flatShader.setMatrix4("projection", mProj);
-	flatShader.setMatrix4("view", mView);
-
-	sunVao.Bind();
-	for (int i = 0; i < kNumPointLights; ++i) {
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), kPointLightPos[i]);
-		model = glm::scale(model, glm::vec3(1.2f));
-		flatShader.setMatrix4("model", model);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	}
 	sunVao.Unbind();
 }

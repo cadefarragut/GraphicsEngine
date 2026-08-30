@@ -55,7 +55,6 @@ int main() {
 		render.DrawSky();
 		render.DrawScene();
 		render.DrawSun();
-		render.DrawLights();
 
 		glfwSwapBuffers(display.window);
 		glfwPollEvents();
