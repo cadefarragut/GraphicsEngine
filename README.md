@@ -1,22 +1,18 @@
 # Roman Colosseum — Real-Time OpenGL Renderer
 
 A small real-time 3D renderer written from scratch in **C++ and OpenGL 3.3**, with no
-game engine. It renders a ~1,500-block model of the Roman Colosseum under a
-multi-light Phong pipeline and an animated day/night cycle.
+game engine. It renders a ~1,500-block model of the Roman Colosseum under a Phong
+lighting pipeline with an animated day/night cycle.
 
-![screenshot](screenshots/colosseum-dusk.png)
-
-*Dusk: the sun sits low and warm, and the four braziers around the arena take over the lighting.*
+![screenshot](screenshots/colosseum.png)
 
 ## Features
 
-- **Lighting** — Phong (ambient / diffuse / specular) with two directional lights
-  (a warm sun and a cool sky-fill) plus four attenuated, flickering point lights
-  for the arena braziers, summed with `CalcDirLight` / `CalcPointLight` helpers.
+- **Lighting** — Phong (ambient / diffuse / specular) with two directional lights,
+  a warm sun and a cool sky-fill, summed through a `CalcDirLight` helper.
 - **Materials** — each texture id has its own tint, shininess and specular strength.
-- **Day/night cycle** — the sun arcs from dawn to dusk on a timer; its position and
-  colour, the sky-gradient, and the brazier intensity are all driven by the sun's
-  height.
+- **Day/night cycle** — the sun sweeps across the sky on a timer; its position and
+  colour and the sky-gradient are all driven by the sun's height.
 - **Procedural sky** — a vertex-coloured gradient cube that follows the camera,
   drawn unlit behind the scene.
 - **Data-driven scenes** — the whole environment is a plain-text list of boxes

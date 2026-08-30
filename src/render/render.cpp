@@ -177,12 +177,9 @@ void Render::BeginWorld(const glm::mat4& viewm, const glm::mat4& proj, const glm
 
 	shader.use();
 
-	float t = static_cast<float>(glfwGetTime());
-
-	// move the sun along an arc, dawn -> noon -> dusk and back
-	float dayT = std::fmod(t / kDayLength, 1.0f);
-	float tri  = 1.0f - std::fabs(2.0f * dayT - 1.0f);
-	float ang  = glm::radians(12.0f + tri * 156.0f);
+	// sweep the sun across the sky, dawn -> noon -> dusk, then loop
+	float dayT = std::fmod(static_cast<float>(glfwGetTime()) / kDayLength, 1.0f);
+	float ang  = glm::radians(10.0f + dayT * 160.0f);
 	mSunPos = glm::normalize(glm::vec3(std::cos(ang), std::sin(ang), 0.32f)) * 160.0f;
 	float elev = glm::clamp(std::sin(ang), 0.0f, 1.0f);   // 0 at the horizon, 1 overhead
 
